@@ -1,3 +1,5 @@
+- [ ] add readme
+- [ ] add options to open claude on mac os - test it
 - [ ] add validation for user input
 - [ ] add tests
 - [ ] add claude code integration - npm package
