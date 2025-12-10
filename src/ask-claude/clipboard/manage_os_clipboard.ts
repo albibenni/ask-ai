@@ -3,7 +3,6 @@
  * across different operating systems (macOS, Linux with Wayland, Linux with X11).
  * It uses platform-specific commands to interact with the Clipboard.
  */
-import { $ } from "bun";
 
 type ClipboardCommands = {
   read: string[];
@@ -61,10 +60,13 @@ export async function setClipboard(text: string): Promise<void> {
     const tempFile = `/tmp/claude-clipboard-${Date.now()}`;
     await Bun.write(tempFile, text);
 
-    const proc = Bun.spawn(["sh", "-c", `cat ${tempFile} | ${write.join(" ")}`], {
-      stdout: "pipe",
-      stderr: "pipe",
-    });
+    const proc = Bun.spawn(
+      ["sh", "-c", `cat ${tempFile} | ${write.join(" ")}`],
+      {
+        stdout: "pipe",
+        stderr: "pipe",
+      },
+    );
 
     await proc.exited;
 

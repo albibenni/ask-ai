@@ -1,3 +1,5 @@
-- add claude code integration - npm package
-    - make it work on extensions
-    - add loader animation
+- [ ] add validation for user input
+- [ ] add tests
+- [ ] add claude code integration - npm package
+    - [ ] make it work on extensions
+  - [ ] add loader animation

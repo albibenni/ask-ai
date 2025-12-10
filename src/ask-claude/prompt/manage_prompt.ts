@@ -1,7 +1,4 @@
-export async function formatPrompt(
-  code: string,
-  context?: string,
-): Promise<string> {
+export function formatPrompt(code: string, context?: string): string {
   const ctx = context || "From clipboard";
 
   return `${ctx}

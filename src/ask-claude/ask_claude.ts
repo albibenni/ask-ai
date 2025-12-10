@@ -61,7 +61,7 @@ ${bold}Examples:${reset}
       console.error("No file selected");
       process.exit(1);
     }
-    const result = await getFileContent(selected!);
+    const result = await getFileContent(selected);
     code = result.code;
     context = result.context;
   }
@@ -89,7 +89,7 @@ ${bold}Examples:${reset}
     process.exit(1);
   }
 
-  const prompt = await formatPrompt(code, context);
+  const prompt = formatPrompt(code, context);
   await setClipboard(prompt);
 
   // Launch browser and notification in background

@@ -4,15 +4,26 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "author": "Alberto Benatti",
+  "license": "ISC",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "indent:write": "prettier . --write",
+    "test": "vitest run",
+    "build": "tsc -w"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.22.0",
   "devDependencies": {
-    "@types/bun": "^1.3.4",
-    "typescript": "^5.9.3"
+    "@types/bun": "1.3.4",
+    "typescript": "5.9.3",
+    "@eslint/eslintrc": "3.3.3",
+    "@eslint/js": "9.39.1",
+    "@types/node": "24.10.2",
+    "eslint": "9.39.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.4",
+    "globals": "16.5.0",
+    "prettier": "3.7.4",
+    "typescript-eslint": "8.49.0",
+    "vitest": "4.0.15"
   }
 }
