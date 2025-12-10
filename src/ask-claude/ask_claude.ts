@@ -96,8 +96,8 @@ ${bold}Examples:${reset}
   openClaude();
   notify("Claude", "Code copied! Paste into browser (Ctrl+V)");
 
-  // Give clipboard a moment to flush before exiting
-  setTimeout(() => process.exit(0), 50);
+  // Exit cleanly
+  process.exit(0);
 }
 
 main().catch(console.error);

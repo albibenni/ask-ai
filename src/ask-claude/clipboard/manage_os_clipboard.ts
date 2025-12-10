@@ -57,10 +57,19 @@ export async function getClipboard(): Promise<string> {
 export async function setClipboard(text: string): Promise<void> {
   const { write } = getClipboardCommandsByOS();
   try {
-    const proc = Bun.spawn(write, { stdin: "pipe" });
-    proc.stdin.write(text);
-    proc.stdin.end();
-    // Don't wait for process to exit - data is already written
+    // Write to temp file and pipe to clipboard - more reliable
+    const tempFile = `/tmp/claude-clipboard-${Date.now()}`;
+    await Bun.write(tempFile, text);
+
+    const proc = Bun.spawn(["sh", "-c", `cat ${tempFile} | ${write.join(" ")}`], {
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+
+    await proc.exited;
+
+    // Clean up temp file
+    await Bun.spawn(["rm", tempFile]).exited;
   } catch (error) {
     console.error(`Failed to write to clipboard using: ${write.join(" ")}`);
     console.error(error);
