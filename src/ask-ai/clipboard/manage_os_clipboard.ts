@@ -13,7 +13,7 @@ import z from "zod/v4";
  * Determines the appropriate clipboard commands based on the operating system.
  * @returns {ClipboardCommands} Object containing the read and write command arrays for the clipboard.
  */
-function getClipboardCommandsByOS(): ClipboardCommands {
+export function getClipboardCommandsByOS(): ClipboardCommands {
   // macOS
   if (process.platform === "darwin") {
     return {
@@ -39,6 +39,10 @@ function getClipboardCommandsByOS(): ClipboardCommands {
   };
 }
 
+/**
+ * Reads text from the system Clipboard.
+ * @returns {Promise<string>} The text content from the Clipboard.
+ */
 export async function getClipboard(): Promise<string> {
   const { read } = getClipboardCommandsByOS();
   try {
@@ -75,6 +79,11 @@ export async function getClipboard(): Promise<string> {
   }
 }
 
+/**
+ * Writes text to the system Clipboard.
+ * @param {string} text - The text content to write to the Clipboard.
+ * @returns {Promise<void>}
+ */
 export async function setClipboard(text: string): Promise<void> {
   const { write } = getClipboardCommandsByOS();
   try {
