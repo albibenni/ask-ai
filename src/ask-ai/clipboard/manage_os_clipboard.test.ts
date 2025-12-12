@@ -51,12 +51,13 @@ describe("setClipboard", () => {
   });
 
   it("should handle spawn errors gracefully", async () => {
-    const mockSpawn = vi.spyOn(childProcess, "spawn").mockReturnValue({
-      on: vi.fn((event, callback) => {
+    vi.spyOn(childProcess, "spawn").mockReturnValue({
+      on: vi.fn((event, callback: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (event === "close") callback(1); // Simulate failure
         return this;
       }),
-    } as any);
+    } as unknown as ReturnType<typeof childProcess.spawn>);
 
     vi.spyOn(fs, "writeFile").mockResolvedValue();
     vi.spyOn(process, "exit").mockImplementation(() => undefined as never);

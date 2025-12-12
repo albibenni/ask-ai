@@ -40,3 +40,6 @@ coverage/
 # Misc
 *.cache
 .turbo/
+
+# Ignore specific files
+__snapshots__/
