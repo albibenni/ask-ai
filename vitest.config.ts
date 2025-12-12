@@ -10,10 +10,10 @@ export default defineConfig({
     // poolOptions: {
     //   maxWorkers: 1,
     // },
-    setupFiles: ["dotenv/config"],
+    // setupFiles: ["dotenv/config"],
     // env: {
     //   ...config({ path: "./.env.local" }).parsed,
     // },
-    root: "./src",
+    root: "./src/ask-ai/",
   },
 });

@@ -48,6 +48,15 @@ export async function getClipboard(): Promise<string> {
       stdio: ["ignore", "pipe", "ignore"],
     });
 
+    // Set up process event listeners IMMEDIATELY to avoid race conditions
+    const processPromise = new Promise<void>((resolve, reject) => {
+      proc.on("close", (code) => {
+        if (code === 0) resolve();
+        else reject(new Error(`Process exited with code ${code}`));
+      });
+      proc.on("error", reject);
+    });
+
     // Collect stdout chunks
     const chunks: Buffer[] = [];
     for await (const chunk of proc.stdout) {
@@ -55,13 +64,7 @@ export async function getClipboard(): Promise<string> {
     }
 
     // Wait for process to complete
-    await new Promise<void>((resolve, reject) => {
-      proc.on("close", (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`Process exited with code ${code}`));
-      });
-      proc.on("error", reject);
-    });
+    await processPromise;
 
     const text = Buffer.concat(chunks).toString("utf-8");
     return text.trim();
@@ -81,17 +84,18 @@ export async function setClipboard(text: string): Promise<void> {
 
     //sh -c "cat /tmp/ai-clipboard-123456 | pbcopy"
     const proc = spawn("sh", ["-c", `cat ${tempFile} | ${write.join(" ")}`], {
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: "ignore", // Ignore all stdio to prevent hanging
     });
 
-    // Wait for process to complete
-    await new Promise<void>((resolve, reject) => {
+    const processPromise = new Promise<void>((resolve, reject) => {
       proc.on("close", (code) => {
         if (code === 0) resolve();
         else reject(new Error(`Process exited with code ${code}`));
       });
       proc.on("error", reject);
     });
+
+    await processPromise;
 
     // Clean up temp file
     await unlink(tempFile);
