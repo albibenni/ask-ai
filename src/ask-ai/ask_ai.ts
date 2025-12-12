@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 // ~/.local/bin/ask-claude.ts
 
 import { parseArgs } from "node:util";
@@ -74,7 +74,12 @@ ${bold}Examples:${reset}
   }
   // Stdin mode
   else if (values.stdin || !process.stdin.isTTY) {
-    code = await Bun.stdin.text();
+    // Node.js: Read stdin stream chunk by chunk
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) {
+      chunks.push(chunk);
+    }
+    code = Buffer.concat(chunks).toString('utf-8');
     context = "From stdin";
   }
   // Clipboard mode (default)

@@ -4,6 +4,9 @@
  * It uses platform-specific commands to interact with the Clipboard.
  */
 
+import { spawn } from "node:child_process";
+import { writeFile, unlink } from "node:fs/promises";
+
 type ClipboardCommands = {
   read: string[];
   write: string[];
@@ -42,9 +45,27 @@ function getClipboardCommandsByOS(): ClipboardCommands {
 export async function getClipboard(): Promise<string> {
   const { read } = getClipboardCommandsByOS();
   try {
-    const proc = Bun.spawn(read, { stdout: "pipe" });
-    const text = await new Response(proc.stdout).text();
-    await proc.exited;
+    // Spawn process and capture stdout
+    const proc = spawn(read[0]!, read.slice(1), {
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+
+    // Collect stdout chunks
+    const chunks: Buffer[] = [];
+    for await (const chunk of proc.stdout) {
+      chunks.push(chunk);
+    }
+
+    // Wait for process to complete
+    await new Promise<void>((resolve, reject) => {
+      proc.on("close", (code) => {
+        if (code === 0) resolve();
+        else reject(new Error(`Process exited with code ${code}`));
+      });
+      proc.on("error", reject);
+    });
+
+    const text = Buffer.concat(chunks).toString("utf-8");
     return text.trim();
   } catch (error) {
     console.error(`Failed to read from clipboard using: ${read.join(" ")}`);
@@ -58,20 +79,23 @@ export async function setClipboard(text: string): Promise<void> {
   try {
     // Write to temp file and pipe to clipboard - more reliable
     const tempFile = `/tmp/claude-clipboard-${Date.now()}`;
-    await Bun.write(tempFile, text);
+    await writeFile(tempFile, text, "utf-8");
 
-    const proc = Bun.spawn(
-      ["sh", "-c", `cat ${tempFile} | ${write.join(" ")}`],
-      {
-        stdout: "pipe",
-        stderr: "pipe",
-      },
-    );
+    const proc = spawn("sh", ["-c", `cat ${tempFile} | ${write.join(" ")}`], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
 
-    await proc.exited;
+    // Wait for process to complete
+    await new Promise<void>((resolve, reject) => {
+      proc.on("close", (code) => {
+        if (code === 0) resolve();
+        else reject(new Error(`Process exited with code ${code}`));
+      });
+      proc.on("error", reject);
+    });
 
     // Clean up temp file
-    await Bun.spawn(["rm", tempFile]).exited;
+    await unlink(tempFile);
   } catch (error) {
     console.error(`Failed to write to clipboard using: ${write.join(" ")}`);
     console.error(error);

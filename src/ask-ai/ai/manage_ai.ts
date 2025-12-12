@@ -1,8 +1,9 @@
+import { spawn } from "node:child_process";
+
 export function openClaude(): void {
   // Spawn xdg-open detached so it doesn't block
-  Bun.spawn(["xdg-open", "https://claude.ai/new"], {
-    stdout: "ignore",
-    stderr: "ignore",
-    stdin: "ignore",
+  spawn("xdg-open", ["https://claude.ai/new"], {
+    stdio: "ignore",
+    detached: true,
   });
 }

@@ -1,9 +1,10 @@
+import { spawn } from "node:child_process";
+
 export function notify(title: string, message: string): void {
   try {
-    Bun.spawn(["notify-send", title, message], {
-      stdout: "ignore",
-      stderr: "ignore",
-      stdin: "ignore",
+    spawn("notify-send", [title, message], {
+      stdio: "ignore",
+      detached: true,
     });
   } catch {
     console.log(`${title}: ${message}`);
