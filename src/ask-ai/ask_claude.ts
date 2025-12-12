@@ -1,12 +1,11 @@
 #!/usr/bin/env bun
 // ~/.local/bin/ask-claude.ts
 
-import { $ } from "bun";
 import { parseArgs } from "node:util";
 import { getClipboard, setClipboard } from "./clipboard/manage_os_clipboard.ts";
 import { formatPrompt } from "./prompt/manage_prompt.ts";
 import { notify } from "./notification/manage_notifications.ts";
-import { openClaude } from "./claude/manage_claude.ts";
+import { openClaude } from "./ai/manage_ai.ts";
 import { getFileContent, selectFileInteractive } from "./files/manage_files.ts";
 
 async function main() {
