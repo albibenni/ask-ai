@@ -13,7 +13,6 @@
   },
   "keywords": [],
   "devDependencies": {
-    "typescript": "5.9.3",
     "@eslint/eslintrc": "3.3.3",
     "@eslint/js": "9.39.1",
     "@types/node": "24.10.2",
@@ -22,7 +21,9 @@
     "eslint-plugin-prettier": "5.5.4",
     "globals": "16.5.0",
     "prettier": "3.7.4",
+    "typescript": "5.9.3",
     "typescript-eslint": "8.49.0",
-    "vitest": "4.0.15"
+    "vitest": "4.0.15",
+    "zod": "4.1.13"
   }
 }
