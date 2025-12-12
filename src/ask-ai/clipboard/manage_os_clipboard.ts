@@ -6,11 +6,8 @@
 
 import { spawn } from "node:child_process";
 import { writeFile, unlink } from "node:fs/promises";
-
-type ClipboardCommands = {
-  read: string[];
-  write: string[];
-};
+import { ChunkSchema, type ClipboardCommands } from "../types/types.ts";
+import z from "zod/v4";
 
 /**
  * Determines the appropriate clipboard commands based on the operating system.
@@ -46,14 +43,15 @@ export async function getClipboard(): Promise<string> {
   const { read } = getClipboardCommandsByOS();
   try {
     // Spawn process and capture stdout
-    const proc = spawn(read[0]!, read.slice(1), {
+    const clipboard = z.string("Clipboard cannot be empty").parse(read[0]);
+    const proc = spawn(clipboard, read.slice(1), {
       stdio: ["ignore", "pipe", "ignore"],
     });
 
     // Collect stdout chunks
     const chunks: Buffer[] = [];
     for await (const chunk of proc.stdout) {
-      chunks.push(chunk);
+      chunks.push(ChunkSchema.parse(chunk));
     }
 
     // Wait for process to complete
@@ -78,9 +76,10 @@ export async function setClipboard(text: string): Promise<void> {
   const { write } = getClipboardCommandsByOS();
   try {
     // Write to temp file and pipe to clipboard - more reliable
-    const tempFile = `/tmp/claude-clipboard-${Date.now()}`;
+    const tempFile = `/tmp/ai-clipboard-${Date.now()}`;
     await writeFile(tempFile, text, "utf-8");
 
+    //sh -c "cat /tmp/ai-clipboard-123456 | pbcopy"
     const proc = spawn("sh", ["-c", `cat ${tempFile} | ${write.join(" ")}`], {
       stdio: ["ignore", "pipe", "pipe"],
     });
