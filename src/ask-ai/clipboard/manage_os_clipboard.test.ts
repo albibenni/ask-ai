@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { setClipboard } from "./manage_os_clipboard.ts";
+import {
+  setClipboard,
+  getClipboardCommandsByOS,
+  getClipboard,
+} from "./manage_os_clipboard.ts";
 import * as childProcess from "node:child_process";
 import * as fs from "node:fs/promises";
 
@@ -59,6 +63,23 @@ describe("setClipboard", () => {
 
     await setClipboard("test");
 
-    expect(process.exit).toHaveBeenCalledWith(1);
+    const mockExit = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+
+    expect(mockExit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("clipboard commands", () => {
+  it("should generate correct command for each OS", () => {
+    const platforms = ["darwin", "linux"];
+
+    platforms.forEach((platform) => {
+      Object.defineProperty(process, "platform", { value: platform });
+
+      const { write } = getClipboardCommandsByOS();
+      expect(write).toMatchSnapshot();
+    });
   });
 });
