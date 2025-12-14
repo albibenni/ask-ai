@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
-import { spawn } from "node:child_process";
-import { ChunkSchema } from "../types/types.ts";
+import { spawn, type ChildProcessByStdio } from "node:child_process";
+import { ChunkSchema, CommandSchema } from "../types/types.ts";
+import type Stream from "node:stream";
 
 /**
  * Reads the content of a file, optionally extracting specific lines.
@@ -35,9 +36,19 @@ export async function getFileContent(
  * @returns {Promise<string | null>} The selected file path or null if none selected.
  */
 export async function selectFileInteractive(): Promise<string | null> {
-  try {
+  const fzfAvailable = CommandSchema.parse("fzf");
+  const fdAvailable = CommandSchema.parse("fzf");
+  let proc: ChildProcessByStdio<null, Stream.Readable, null>;
+
+  if (!fzfAvailable) {
+    console.error("fzf is not available in PATH");
+    console.error("Please install fzf to use interactive file selection.");
+    return null;
+  }
+
+  if (fdAvailable) {
     // Use fzf to select file
-    const proc = spawn(
+    proc = spawn(
       "sh",
       [
         "-c",
@@ -45,26 +56,34 @@ export async function selectFileInteractive(): Promise<string | null> {
       ],
       { stdio: ["inherit", "pipe", "inherit"] },
     );
-
-    // Collect stdout chunks
-    const chunks: Buffer[] = [];
-    for await (const chunk of proc.stdout) {
-      const validatedChunk = ChunkSchema.parse(chunk);
-      chunks.push(validatedChunk);
-    }
-
-    // Wait for process to complete
-    await new Promise<void>((resolve, reject) => {
-      proc.on("close", (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`Process exited with code ${code}`));
-      });
-      proc.on("error", reject);
-    });
-
-    const result = Buffer.concat(chunks).toString("utf-8");
-    return result.trim();
-  } catch {
-    return null;
+  } else {
+    // Fallback to find command
+    proc = spawn(
+      "sh",
+      [
+        "-c",
+        "find . -type f | fzf --prompt='Select file: ' --preview='bat --color=always {}'",
+      ],
+      { stdio: ["inherit", "pipe", "inherit"] },
+    );
   }
+
+  // Collect stdout chunks
+  const chunks: Buffer[] = [];
+  for await (const chunk of proc.stdout) {
+    const validatedChunk = ChunkSchema.parse(chunk);
+    chunks.push(validatedChunk);
+  }
+
+  // Wait for process to complete
+  await new Promise<void>((resolve, reject) => {
+    proc.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Process exited with code ${code}`));
+    });
+    proc.on("error", reject);
+  });
+
+  const result = Buffer.concat(chunks).toString("utf-8");
+  return result.trim();
 }

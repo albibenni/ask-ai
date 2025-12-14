@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import { isCommandAvailable } from "../utils/utils.ts";
 
 export const ChunkSchema = z
   .instanceof(Buffer)
@@ -16,3 +17,12 @@ export type ClipboardCommands = z.infer<typeof ClipboardCommandsSchema>;
 //   read: string[];
 //   write: string[];
 // };
+
+export const CommandSchema = z.string().superRefine((cmd, ctx) => {
+  if (!isCommandAvailable(cmd)) {
+    ctx.addIssue({
+      code: "custom",
+      message: `Command '${cmd}' is not available in PATH`,
+    });
+  }
+});
